@@ -5,6 +5,7 @@ import { Metrics } from '../types/Metrics';
 import { IstioConfigDetails } from '../types/IstioConfigDetails';
 import { IstioConfigList } from '../types/IstioConfigList';
 import { Workload, WorkloadNamespaceResponse } from '../types/Workload';
+import { OAuth } from '../types/OAuth';
 import { NamespaceValidations, Validations } from '../types/IstioObjects';
 import { ServiceDetailsInfo } from '../types/ServiceInfo';
 import JaegerInfo from '../types/JaegerInfo';
@@ -342,6 +343,14 @@ export const getWorkloads = (auth: AuthToken, namespace: string): Promise<Respon
 
 export const getWorkload = (auth: AuthToken, namespace: string, name: string): Promise<Response<Workload>> => {
   return newRequest(HTTP_VERBS.GET, urls.workload(namespace, name), {}, {}, auth);
+};
+
+export const getOAuthStatus = (): Promise<Response<OAuth>> => {
+  return newRequest(HTTP_VERBS.GET, urls.oauthInfo(), {}, {});
+};
+
+export const getUserInfo = (auth: AuthToken): Promise<Response<OAuth>> => {
+  return newRequest(HTTP_VERBS.GET, urls.userInfo(), {}, {}, auth);
 };
 
 export const getErrorMsg = (msg: AuthToken, error: AxiosError) => {

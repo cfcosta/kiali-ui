@@ -8,12 +8,25 @@ export const INITIAL_LOGIN_STATE: LoginState = {
   message: '',
   logged: false,
   logging: false,
+  oauth: {
+    isLoading: true,
+    enabled: false,
+    authorizationEndpoint: ''
+  },
   sessionTimeOut: undefined
 };
 
 // This Reducer allows changes to the 'LoginState' portion of Redux Store
 const LoginState = (state: LoginState = INITIAL_LOGIN_STATE, action) => {
   switch (action.type) {
+    case LoginActionKeys.OAUTH_STATUS:
+      return Object.assign({}, INITIAL_LOGIN_STATE, {
+        oauth: {
+          isLoading: action.isLoading,
+          enabled: action.enabled,
+          authorizationEndpoint: action.authorizationEndpoint
+        }
+      });
     case LoginActionKeys.LOGIN_REQUEST:
       return Object.assign({}, INITIAL_LOGIN_STATE, {
         logging: true
@@ -23,7 +36,11 @@ const LoginState = (state: LoginState = INITIAL_LOGIN_STATE, action) => {
         logged: true,
         token: action.token,
         username: action.username,
-        sessionTimeOut: action.sessionTimeOut
+        sessionTimeOut: action.sessionTimeOut,
+        oauth: {
+          isLoading: false,
+          ...action.oauth
+        }
       });
     case LoginActionKeys.LOGIN_EXTEND:
       return Object.assign({}, INITIAL_LOGIN_STATE, {

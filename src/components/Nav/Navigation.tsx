@@ -19,6 +19,10 @@ export const servicesTitle = 'Services';
 type PropsType = {
   location: any;
   authenticated: boolean;
+  oauth: {
+    isLoading: boolean;
+    enabled: boolean;
+  };
   navCollapsed: boolean;
   checkCredentials: () => void;
   setNavCollapsed: (collapse: boolean) => void;
@@ -98,30 +102,34 @@ class Navigation extends React.Component<PropsType> {
       this.setDocLayout();
     });
 
-    return this.props.authenticated ? (
-      <>
-        <VerticalNav
-          className="kiali-vertical-nav"
-          setControlledState={this.setControlledState}
-          navCollapsed={this.props.navCollapsed}
-        >
-          <VerticalNav.Masthead title="Kiali">
-            <VerticalNav.Brand iconImg={KialiLogo} />
-            <PfSpinnerContainer />
-            <VerticalNav.IconBar>
-              <MessageCenter.Trigger />
-              <HelpDropdown />
-              <UserDropdown />
-            </VerticalNav.IconBar>
-            <MessageCenter drawerTitle="Message Center" />
-          </VerticalNav.Masthead>
-          {this.renderMenuItems()}
-        </VerticalNav>
-        <RenderPage />
-      </>
-    ) : (
-      <LoginPage />
-    );
+    if (this.props.oauth.isLoading) {
+      return <div>Loading</div>;
+    } else {
+      return this.props.authenticated ? (
+        <>
+          <VerticalNav
+            className="kiali-vertical-nav"
+            setControlledState={this.setControlledState}
+            navCollapsed={this.props.navCollapsed}
+          >
+            <VerticalNav.Masthead title="Kiali">
+              <VerticalNav.Brand iconImg={KialiLogo} />
+              <PfSpinnerContainer />
+              <VerticalNav.IconBar>
+                <MessageCenter.Trigger />
+                <HelpDropdown />
+                <UserDropdown />
+              </VerticalNav.IconBar>
+              <MessageCenter drawerTitle="Message Center" />
+            </VerticalNav.Masthead>
+            {this.renderMenuItems()}
+          </VerticalNav>
+          <RenderPage />
+        </>
+      ) : (
+        <LoginPage />
+      );
+    }
   }
 }
 

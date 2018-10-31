@@ -56,6 +56,13 @@ export interface Token {
   token: string;
   expired_at: string;
 }
+
+export interface OAuthState {
+  isLoading: boolean;
+  enabled: boolean;
+  authorizationEndpoint: string;
+}
+
 export interface LoginState {
   token?: Token;
   username?: string;
@@ -64,6 +71,7 @@ export interface LoginState {
   logged: boolean;
   logging: boolean;
   sessionTimeOut?: Date;
+  oauth: OAuthState;
 }
 
 export interface Component {

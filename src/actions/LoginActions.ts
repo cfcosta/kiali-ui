@@ -5,17 +5,25 @@ import { HTTP_CODES } from '../types/Common';
 import { HelpDropdownActions } from './HelpDropdownActions';
 import { GrafanaActions } from './GrafanaActions';
 import { config } from '../config';
+import _ from 'lodash';
 
 export enum LoginActionKeys {
   LOGIN_REQUEST = 'LOGIN_REQUEST',
   LOGIN_EXTEND = 'LOGIN_EXTEND',
   LOGIN_SUCCESS = 'LOGIN_SUCCESS',
   LOGIN_FAILURE = 'LOGIN_FAILURE',
-  LOGOUT_SUCCESS = 'LOGOUT_SUCCESS'
+  LOGOUT_SUCCESS = 'LOGOUT_SUCCESS',
+  OAUTH_STATUS = 'OAUTH_STATUS'
 }
 
 // synchronous action creators
 export const LoginActions = {
+  oauthStatus: createAction(LoginActionKeys.OAUTH_STATUS, (enabled: boolean, authorizationEndpoint: string) => ({
+    type: LoginActionKeys.OAUTH_STATUS,
+    isLoading: false,
+    enabled: enabled,
+    authorizationEndpoint: authorizationEndpoint
+  })),
   loginRequest: createAction(LoginActionKeys.LOGIN_REQUEST),
   loginExtend: createAction(LoginActionKeys.LOGIN_EXTEND, (token: Token, username: string, currentTimeOut: number) => ({
     type: LoginActionKeys.LOGIN_EXTEND,
@@ -41,7 +49,8 @@ export const LoginActions = {
     type: LoginActionKeys.LOGOUT_SUCCESS,
     token: undefined,
     username: undefined,
-    logged: false
+    logged: false,
+    oauth: undefined
   })),
   extendSession: () => {
     return (dispatch, getState) => {
@@ -58,10 +67,16 @@ export const LoginActions = {
   checkCredentials: () => {
     return (dispatch, getState) => {
       const actualState = getState() || {};
+
       /** Check if there is a token in session */
       if (actualState['authentication']['token'] === undefined) {
-        /** Logout user */
-        dispatch(LoginActions.logoutSuccess());
+        if (!actualState['oauth']) {
+          dispatch(LoginActions.checkOauthAndRedirect());
+        } else {
+          /** Logout user */
+          dispatch(LoginActions.logoutSuccess());
+          dispatch(LoginActions.checkOauthAndRedirect());
+        }
       } else {
         /** Check the session timeout */
         if (new Date().getTime() > getState().authentication.sessionTimeOut) {
@@ -92,6 +107,41 @@ export const LoginActions = {
             }
           );
         }
+      }
+    };
+  },
+  checkOauthAndRedirect: () => {
+    return (dispatch, getState) => {
+      const hashParams: any = window.location.hash
+        .split('&')
+        .map(v => v.split('='))
+        .reduce((accum, [key, value]) => ({ ...accum, [_.camelCase(key)]: decodeURI(value) }), {});
+
+      if (hashParams.accessToken) {
+        window.location.hash = '';
+
+        // Here we get the user info, namely it's username so we can show on the bar.
+        // If that does not happen, then we logout the user again, since the
+        // only situation where that should happen is when either the token is
+        // not valid anymore or the server is not available. Either way the
+        // user should not be able to do any action in those situations.
+        API.getUserInfo()
+          .then(user => {
+            dispatch(LoginActions.loginSuccess(hashParams.accessToken, user.data.username));
+            dispatch(HelpDropdownActions.refresh());
+          })
+          .catch(() => dispatch(LoginActions.logoutSuccess()));
+      } else {
+        if (getState().authentication && !getState().authentication!.enabled) {
+          return;
+        }
+
+        API.getOAuthStatus()
+          .then(status => {
+            dispatch(LoginActions.oauthStatus(true, status.data.authorizationEndpoint));
+            window.location.href = status.data.authorizationEndpoint;
+          })
+          .catch(() => dispatch(LoginActions.oauthStatus(false, '')));
       }
     };
   },

@@ -13,6 +13,7 @@ const _tester = (path: string, expectedMenuPath: string) => {
       navCollapsed={false}
       setNavCollapsed={jest.fn()}
       jaegerUrl={''}
+      oauth={{ isLoading: false, enabled: false }}
     />
   );
 
