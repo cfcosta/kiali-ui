@@ -355,11 +355,6 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
-"@types/url-search-params@0.10.2":
-  version "0.10.2"
-  resolved "https://registry.yarnpkg.com/@types/url-search-params/-/url-search-params-0.10.2.tgz#bf7587e67953906ea67a8ff0ddbcb6f4482ebaa3"
-  integrity sha512-AaM3cTaHIbIJecuqf15ystbsUL3rtiJHZHhv6hTu1hBeKbvGwUNdHXfqNiY2LMWIT8ip6SqA+M9wYWIsQiMH2g==
-
 "@yarnpkg/lockfile@^1.0.2":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"
